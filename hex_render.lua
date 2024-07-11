@@ -88,11 +88,4 @@ local function draw_pattern(direction, pattern, x, y, size, color)
     render_points(x, y, points, size)
 end
 
-term.clear()
-local pattern = "deaqq"
-local direction = "SOUTH_EAST"
-draw_pattern(direction, pattern, 20, 1, 20, colors.yellow)
-draw_pattern(direction, pattern, 41, 1, 20, colors.yellow)
-term.setCursorPos(1,1)
-
-return {draw_pattern}
+return draw_pattern
