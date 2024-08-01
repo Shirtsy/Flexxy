@@ -8,20 +8,24 @@ end
 
 -- Function to extract pattern and direction from JSON data
 local function get_pattern(pattern_name)
-    -- Load the JSON file
-    local file = fs.open(getRunningPath() .. "symbol-registry.json", "r")
-    -- Parse the JSON content
-    local data = textutils.unserialiseJSON(file.readAll())
-    if not data then
-        error("Failed to decode JSON data")
-    end
-
-    -- Find and return the pattern and direction for the given modName
-    local entry = data[pattern_name]
-    if entry then
-        return entry.pattern, entry.direction
+    if type(pattern_name) == "table" then
+        return pattern_name.pattern, pattern_name.direction
     else
-        return nil, nil
+        -- Load the JSON file
+        local file = fs.open(getRunningPath() .. "symbol-registry.json", "r")
+        -- Parse the JSON content
+        local data = textutils.unserialiseJSON(file.readAll())
+        if not data then
+            error("Failed to decode JSON data")
+        end
+
+        -- Find and return the pattern and direction for the given modName
+        local entry = data[pattern_name]
+        if entry then
+            return entry.pattern, entry.direction
+        else
+            return nil, nil
+        end
     end
 end
 
@@ -36,11 +40,12 @@ local pattern_list = {
     "Alidade's Purification",
     "Scout's Distillation",
     "Jester's Gambit",
-    "Flay Mind"
+    "Flay Mind",
+    {pattern = "aqaawaaqqaa", direction = "SOUTH_EAST"}
 }
 
 term.clear()
-local width, height = 5, 4
+local width, height = 10, 6
 local row_length = math.floor(51/width)
 for i, pattern in pairs(pattern_list) do
     local pattern, start_angle = get_pattern(pattern)
