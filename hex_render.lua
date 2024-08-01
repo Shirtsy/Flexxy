@@ -1,4 +1,6 @@
 local Vector2D = require("vector2d")
+local math = require("math")
+local SmolCanvas = require("smol_canvas")
 
 local pattern_angles = {
     a = 120,
@@ -15,77 +17,84 @@ local pattern_angles = {
     SOUTH_EAST = 300
 }
 
-local function get_endpoint(vec2d, angle, length)
-    local angleRad = angle * math.pi / 180
-    local newX = vec2d.x + length * (7 / math.sqrt(5^2 + 7^2)) * math.cos(angleRad)
-    local newY = vec2d.y - length * (5 / math.sqrt(5^2 + 7^2)) * math.sin(angleRad)
-    return Vector2D.new(newX, newY)
-end
-
-local function drawVecs(vec2d_1, vec2d_2, color)
-    paintutils.drawLine(vec2d_1.x, vec2d_1.y, vec2d_2.x, vec2d_2.y, color)
-end
-
-local function get_points(direction, pattern)
-    local points = {}
-    table.insert(points, Vector2D.new(0,0))
-    local length = 1
-    local angle = pattern_angles[direction]
-    local new_point = get_endpoint(Vector2D.new(0,0), angle, length)
-    table.insert(points, new_point)
+local function parse_pattern(pattern, start_angle)
+    local angles = {}
     for i = 1, #pattern do
-        local c = pattern:sub(i,i)
-        angle = angle + pattern_angles[c]
-        new_point = get_endpoint(new_point, angle, length)
-        table.insert(points, new_point)
+        local char = pattern:sub(i, i):lower()
+        table.insert(angles, pattern_angles[char])
     end
+
+    -- Concatenate the pattern angles to the start angle
+    table.insert(angles, 1, pattern_angles[start_angle])
+
+    return angles
+end
+
+local function plot_angles(angles)
+    local points = {Vector2D.new(0, 0)}  -- Start at (0, 0)
+    local current_point = Vector2D.new(0, 0)
+    local current_angle = 0
+
+    for _, angle in ipairs(angles) do
+        -- Accumulate the angle
+        current_angle = (current_angle + angle) % 360
+        
+        -- Convert angle to radians
+        local rad_angle = math.rad(current_angle)
+        
+        -- Calculate the next point
+        local dx = math.cos(rad_angle)
+        local dy = math.sin(rad_angle)
+        local vector = Vector2D.new(dx, dy)
+        
+        -- Add the new vector to the current point
+        current_point = Vector2D.add(current_point, vector)
+        
+        -- Add the new point to our list
+        table.insert(points, Vector2D.new(current_point.x, current_point.y))
+    end
+
     return points
 end
 
--- Function to calculate the current bounding box of the pattern
-local function calculate_bounding_box(points)
-    local min_x, max_x, min_y, max_y = points[1].x, points[1].x, points[1].y, points[1].y
-    for _, vec in ipairs(points) do
-        if vec.x < min_x then min_x = vec.x end
-        if vec.x > max_x then max_x = vec.x end
-        if vec.y < min_y then min_y = vec.y end
-        if vec.y > max_y then max_y = vec.y end
+
+local function get_point_canvas(pattern, start_angle, width, height)
+    local points = plot_angles(parse_pattern(pattern, start_angle))
+    local all_x = {}
+    local all_y = {}
+    for _,vec in pairs(points) do
+        table.insert(all_x, vec.x)
+        table.insert(all_y, vec.y)
     end
-    return min_x, max_x, min_y, max_y
+    local min_x = math.min(table.unpack(all_x))
+    local max_x = math.max(table.unpack(all_x))
+    local min_y = math.min(table.unpack(all_y))
+    local max_y = math.max(table.unpack(all_y))
+
+    local pattern_midpoint = Vector2D.new((max_x + min_x)/2, (min_y + max_y)/2)
+    local canvas = SmolCanvas.new(width, height)
+    local scale_factor = 0.8 * math.min(canvas.pixel_width, canvas.pixel_height) / math.max(max_x - min_x, max_y - min_y)
+
+    for i,vec in pairs(points) do
+        vec.x = math.floor((vec.x - pattern_midpoint.x) * scale_factor + canvas.pixel_width/2)
+        vec.y = math.floor((vec.y - pattern_midpoint.y) * scale_factor * -1 + canvas.pixel_height/2)
+    end
+    for i = 1, #points - 1 do
+        canvas:draw_line(points[i].x, points[i].y, points[i+1].x, points[i+1].y)
+    end
+
+    return canvas
 end
 
-local function scale_points(points, target_size)
-    local min_x, max_x, min_y, max_y = calculate_bounding_box(points)
-    local current_width = max_x - min_x
-    local current_height = max_y - min_y
-    local scale_factor = (target_size - 1) / math.max(current_width, current_height)
-    
-    local scaled_points = {}
-    for _, vec in ipairs(points) do
-        local scaled_point = Vector2D.new(
-            (vec.x - min_x) * scale_factor,
-            (vec.y - min_y) * scale_factor
-        )
-        table.insert(scaled_points, scaled_point)
-    end
-    
-    return scaled_points
-end
 
-local function render_points(x, y, points, size)
-    local points = scale_points(points, size)
-    for _, vec in ipairs(points) do
-        vec.x = vec.x + x
-        vec.y = vec.y + y
-    end
-    for i = 1, (#points - 1) do
-        drawVecs(points[i], points[i+1], colors.yellow)
-    end
-end
 
-local function draw_pattern(direction, pattern, x, y, size, color)
-    local points = get_points(direction, pattern)
-    render_points(x, y, points, size)
-end
+local char_width = 10  -- character width of the canvas
+local char_height = 6 -- character height of the canvas
+local pattern = "qeqwqwqwqwqeqaeqeaqeqaeqaqded" -- example pattern
+local start_angle = "NORTH_EAST" -- example start angle
 
-return draw_pattern
+local canv = get_point_canvas(pattern, start_angle, char_width, char_height)
+canv:set_background_color(colors.gray)
+term.clear()
+canv:render_canvas(2,2)
+term.setCursorPos(1,1)
