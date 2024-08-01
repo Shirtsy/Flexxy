@@ -1,8 +1,11 @@
 local draw_pattern = require("hex_render")
 
+local mon = peripheral.find("monitor")
+-- term.redirect(mon)
+local mon_x, _ = mon.getSize()
+mon.setTextScale(51/100)
 term.clear()
-local pattern = "qeqwqwqwqwqeqaeqeaqeqaeqaqded"
-local direction = "NORTH_EAST"
-draw_pattern(direction, pattern, 20, 1, 20, colors.yellow)
-draw_pattern(direction, pattern, 41, 1, 20, colors.yellow)
+sleep(1)
+draw_pattern('NORTH_EAST', 'qeqwqwqwqwqeqaeqeaqeqaeqaqded', 20, 1, 20, colors.yellow)
+draw_pattern('SOUTH_EAST', 'deaqq', 41, 1, 20, colors.yellow)
 term.setCursorPos(1,1)
