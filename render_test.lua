@@ -40,8 +40,8 @@ local pattern_list = {
 }
 
 term.clear()
-local width, height = 8, 5
-local row_length = 6
+local width, height = 5, 4
+local row_length = math.floor(51/width)
 for i, pattern in pairs(pattern_list) do
     local pattern, start_angle = get_pattern(pattern)
     local canv = get_point_canvas(pattern, start_angle, width, height)
