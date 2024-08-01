@@ -1,5 +1,6 @@
 local Vector2D = require("vector2d")
 local math = require("math")
+local SmolCanvas = require("smol_canvas")
 
 local pattern_angles = {
     a = 120,
@@ -102,3 +103,47 @@ local function process_points(points, target_size)
 
     return processed_points, center
 end
+
+local function get_pattern_canvas(width, height, pattern, start_angle)
+    -- Create a canvas
+    local canvas = SmolCanvas.new(width, height)
+    
+    -- Parse the pattern
+    local angles = parse_pattern(pattern, start_angle)
+    
+    -- Plot the pattern
+    local points = plot_pattern(angles)
+    
+    -- Process the points to fit within the canvas
+    local pixel_width = width * 2
+    local pixel_height = height * 3
+    local target_size = math.min(pixel_width, pixel_height) * 0.8 -- Leave some margin
+    local processed_points = process_points(points, target_size)
+    
+    -- Center the pattern on the canvas
+    local center_x = pixel_width / 2
+    local center_y = pixel_height / 2
+    
+    -- Draw the pattern on the canvas
+    for i = 1, #processed_points - 1 do
+        local start_x = math.floor(processed_points[i].x + center_x + 0.5)
+        local start_y = math.floor(processed_points[i].y + center_y + 0.5)
+        local end_x = math.floor(processed_points[i+1].x + center_x + 0.5)
+        local end_y = math.floor(processed_points[i+1].y + center_y + 0.5)
+        
+        canvas:draw_line(start_x, start_y, end_x, end_y)
+    end
+    
+    return canvas
+end
+
+local char_width = 15  -- character width of the canvas
+local char_height = 10 -- character height of the canvas
+local pattern = "q" -- example pattern
+local start_angle = "NORTH" -- example start angle
+
+term.clear()
+local canvas = get_pattern_canvas(char_width, char_height, pattern, start_angle)
+canvas:set_background_color(colors.gray)
+canvas:render_canvas(1, 2) -- Render the canvas at position (1,1) on the terminal
+term.setCursorPos(1,1)
