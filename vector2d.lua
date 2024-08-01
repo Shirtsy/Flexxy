@@ -1,7 +1,5 @@
-local Vector2D = {
-    x = 0,
-    y = 0,
-}
+local Vector2D = {}
+Vector2D.__index = Vector2D
 
 function Vector2D.new(x, y)
     local vec = {}
@@ -29,10 +27,17 @@ function Vector2D.mul(vec, value)
     return Vector2D.new(x, y)
 end
 
+function Vector2D.div(vec, value)
+    local x = vec.x / value
+    local y = vec.y / value
+    return Vector2D.new(x, y)
+end
+
 Vector2D.metatable = {
     __add = Vector2D.add,
     __sub = Vector2D.sub,
-    __mul = Vector2D.mul
+    __mul = Vector2D.mul,
+    __div = Vector2D.div,
 }
 
 return Vector2D
