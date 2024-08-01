@@ -86,15 +86,4 @@ local function get_point_canvas(pattern, start_angle, width, height)
     return canvas
 end
 
-
-
-local char_width = 10  -- character width of the canvas
-local char_height = 6 -- character height of the canvas
-local pattern = "qeqwqwqwqwqeqaeqeaqeqaeqaqded" -- example pattern
-local start_angle = "NORTH_EAST" -- example start angle
-
-local canv = get_point_canvas(pattern, start_angle, char_width, char_height)
-canv:set_background_color(colors.gray)
-term.clear()
-canv:render_canvas(2,2)
-term.setCursorPos(1,1)
+return get_point_canvas
