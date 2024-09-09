@@ -35,11 +35,11 @@ function Vector2D:normalize()
 end
 
 function Vector2D.dot(vec1, vec2)
-    return vec1.x * vec2.x + vec1.y * vec2.y
+    return (vec1.x * vec2.x) + (vec1.y * vec2.y)
 end
 
 function Vector2D.cross(vec1, vec2)
-    return vec1.x * vec2.y - vec1.y * vec2.x
+    return (vec1.x * vec2.y) - (vec1.y * vec2.x)
 end
 
 Vector2D.__add = Vector2D.add
