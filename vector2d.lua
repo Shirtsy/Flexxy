@@ -47,5 +47,4 @@ Vector2D.__sub = Vector2D.sub
 Vector2D.__mul = Vector2D.mul
 Vector2D.__div = Vector2D.div
 
-
 return Vector2D
